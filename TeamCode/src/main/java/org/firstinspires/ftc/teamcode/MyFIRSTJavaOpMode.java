@@ -8,12 +8,24 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp
 
 public class MyFIRSTJavaOpMode extends LinearOpMode {
+    public static final double VITESSE = 0.25;
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor testDrive = null;
+    private DcMotor leftDrive = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        testDrive = hardwareMap.get(DcMotor.class, "testDrive");
+        leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+
+
+        while (opModeInInit()) {
+
+        }
+
+        leftDrive.setPower(VITESSE);
+        sleep(5000);
+        leftDrive.setPower(0);
+
 
     }
 }
