@@ -11,7 +11,6 @@ public class TestOpMode extends LinearOpMode {
     private DcMotor backRightDrive;
     private DcMotor backLeftDrive;
 
-
     @Override
     public void runOpMode() {
         frontRightDrive = hardwareMap.get(DcMotor.class, "avantDroit");
@@ -19,32 +18,59 @@ public class TestOpMode extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "dosDroit");
         backLeftDrive = hardwareMap.get(DcMotor.class, "dosGauche");
 
+        // Configuration des directions des moteurs (ajuster selon votre robot)
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        telemetry.addData("Status", "Initialized");
         telemetry.update();
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            if (gamepad1.right_trigger > 0f) {
-                int speed = (int) (gamepad1.right_trigger * 100);
-                telemetry.addLine("Speed : " + speed);
-                telemetry.update();
-                move(-speed, speed, -speed, speed);
-            } else if (gamepad1.left_trigger > 0f) {
-                int speed = (int) (gamepad1.left_trigger * 100);
-                telemetry.addLine("Speed : " + speed);
-                telemetry.update();
-                move(speed, -speed, speed, -speed);
-            } else {
-                move(0, 0, 0, 0);
-            }
-        }
-    }
+            // Lecture des joysticks
+            double drive = -gamepad1.left_stick_y;    // Avant/Arrière
+            double strafe = gamepad1.left_stick_x;    // Gauche/Droite (latéral)
+            double rotate = gamepad1.right_stick_x;   // Rotation
 
-    public void move(int frontLeft, int frontRight, int backLeft, int backRight) {
-        frontRightDrive.setPower(frontRight);
-        frontLeftDrive.setPower(-frontLeft);
-        backLeftDrive.setPower(-backLeft);
-        backRightDrive.setPower(backRight);
+            // Calcul des puissances des moteurs pour le Mecanum
+            double frontLeftPower = drive + strafe + rotate;
+            double frontRightPower = drive - strafe - rotate;
+            double backLeftPower = drive - strafe + rotate;
+            double backRightPower = drive + strafe - rotate;
+
+            // Normalisation des puissances pour ne pas dépasser 1.0
+            double maxPower = Math.max(Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower)),
+                    Math.max(Math.abs(backLeftPower), Math.abs(backRightPower)));
+
+            if (maxPower > 1.0) {
+                frontLeftPower /= maxPower;
+                frontRightPower /= maxPower;
+                backLeftPower /= maxPower;
+                backRightPower /= maxPower;
+            }
+
+            // Application des puissances aux moteurs
+            frontLeftDrive.setPower(frontLeftPower);
+            frontRightDrive.setPower(frontRightPower);
+            backLeftDrive.setPower(backLeftPower);
+            backRightDrive.setPower(backRightPower);
+
+            // Télémetrie
+            telemetry.addData("Joystick", "Drive: %.2f, Strafe: %.2f, Rotate: %.2f", drive, strafe, rotate);
+            telemetry.addData("Moteurs", "FL: %.2f, FR: %.2f, BL: %.2f, BR: %.2f",
+                    frontLeftPower, frontRightPower, backLeftPower, backRightPower);
+            telemetry.update();
+        }
+
+        // Arrêt des moteurs à la fin
+        frontLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backLeftDrive.setPower(0);
+        backRightDrive.setPower(0);
     }
 }
