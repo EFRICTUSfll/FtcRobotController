@@ -29,9 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -65,7 +65,7 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
 @TeleOp(name = "Concept: AprilTag Localization", group = "Concept")
-@Disabled
+
 public class ConceptAprilTagLocalization extends LinearOpMode {
 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
@@ -73,20 +73,20 @@ public class ConceptAprilTagLocalization extends LinearOpMode {
     /**
      * Variables to store the position and orientation of the camera on the robot. Setting these
      * values requires a definition of the axes of the camera and robot:
-     *
+     * <p>
      * Camera axes:
      * Origin location: Center of the lens
      * Axes orientation: +x right, +y down, +z forward (from camera's perspective)
-     *
+     * <p>
      * Robot axes (this is typical, but you can define this however you want):
      * Origin location: Center of the robot at field height
      * Axes orientation: +x right, +y forward, +z upward
-     *
+     * <p>
      * Position:
      * If all values are zero (no translation), that implies the camera is at the center of the
      * robot. Suppose your camera is positioned 5 inches to the left, 7 inches forward, and 12
      * inches above the ground - you would need to set the position to (-5, 7, 12).
-     *
+     * <p>
      * Orientation:
      * If all values are zero (no rotation), that implies the camera is pointing straight up. In
      * most cases, you'll need to set the pitch to -90 degrees (rotation about the x-axis), meaning
@@ -94,10 +94,8 @@ public class ConceptAprilTagLocalization extends LinearOpMode {
      * it's pointing straight left, -90 degrees for straight right, etc. You can also set the roll
      * to +/-90 degrees if it's vertical, or 180 degrees if it's upside-down.
      */
-    private Position cameraPosition = new Position(DistanceUnit.INCH,
-            0, 0, 0, 0);
-    private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
-            0, -90, 0, 0);
+    private Position cameraPosition = new Position(DistanceUnit.INCH, 0, 0, 0, 0);
+    private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 0, 0);
 
     /**
      * The variable to store our instance of the AprilTag processor.
@@ -108,9 +106,30 @@ public class ConceptAprilTagLocalization extends LinearOpMode {
      * The variable to store our instance of the vision portal.
      */
     private VisionPortal visionPortal;
+    private double vitesseMax = 0.7; // Vitesse par défaut à 70%
+
+
+    private DcMotor frontRightDrive;
+    private DcMotor frontLeftDrive;
+    private DcMotor backRightDrive;
+    private DcMotor backLeftDrive;
+
 
     @Override
     public void runOpMode() {
+
+        // Initialisation des moteurs depuis la configuration hardware
+        frontRightDrive = hardwareMap.get(DcMotor.class, "avantDroit");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "avantGauche");
+        backRightDrive = hardwareMap.get(DcMotor.class, "dosDroit");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "dosGauche");
+
+        // Configuration des directions des moteurs
+        // Ajuster ces directions selon le comportement réel de votre robot
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         initAprilTag();
 
@@ -126,6 +145,10 @@ public class ConceptAprilTagLocalization extends LinearOpMode {
 
             // Push telemetry to the Driver Station.
             telemetry.update();
+
+            //sleep(200);
+            //tourner(0);
+            //sleep(5000);
 
             // Save CPU resources; can resume streaming when needed.
             if (gamepad1.dpad_down) {
@@ -151,11 +174,11 @@ public class ConceptAprilTagLocalization extends LinearOpMode {
         // Create the AprilTag processor.
         aprilTag = new AprilTagProcessor.Builder()
 
-                // The following default settings are available to un-comment and edit as needed.
+                // The followisng default settings are available to un-comment and edit as needed.
                 //.setDrawAxes(false)
                 //.setDrawCubeProjection(false)
                 //.setDrawTagOutline(true)
-                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                //.setTagFamily(ApilTagProcessor.TagFamily.TAG_36h11)
                 //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
                 //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
                 .setCameraPose(cameraPosition, cameraOrientation)
@@ -220,31 +243,75 @@ public class ConceptAprilTagLocalization extends LinearOpMode {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
 
-        // Step through the list of detections and display info for each one.
+        // Step through the list of detections and display info for each one .
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 // Only use tags that don't have Obelisk in them
-                if (!detection.metadata.name.contains("Obelisk")) {
-                    telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
-                            detection.robotPose.getPosition().x,
-                            detection.robotPose.getPosition().y,
-                            detection.robotPose.getPosition().z));
-                    telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
-                            detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
-                            detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
-                            detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+                if (detection.metadata.name.contains("BlueTarget")) {
+                    telemetry.addLine(String.format("Centre %6.1f", detection.center.x));
+                    if (detection.center.x > 340) {
+                        telemetry.addLine(String.format("Tourner Droite"));
+                        double rotation = 0.1;
+                        tourner(rotation);
+                    } else if (detection.center.x < 300) {
+                        telemetry.addLine(String.format("Tourner Gauche"));
+                        double rotation = -0.1;
+                        tourner(rotation);
+                    } else {
+                        telemetry.addLine(String.format("Attendre"));
+                        double rotation = 0;
+                        tourner(rotation);
+                    }
                 }
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
             }
+
         }   // end for() loop
+        if (currentDetections.size()==0){
+            telemetry.addLine(String.format("\n==== Rien trouvé"));
+            double rotation = 0.1;
+            tourner(rotation);
+        }
 
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
 
     }   // end method telemetryAprilTag()
+
+    private void tourner(double rotation) {
+        double puissanceAvantGauche = +rotation;
+        double puissanceAvantDroit = -rotation;
+        double puissanceArriereGauche = +rotation;
+        double puissanceArriereDroit = -rotation;
+
+        double maxPuissance = Math.max(Math.max(Math.abs(puissanceAvantGauche), Math.abs(puissanceAvantDroit)), Math.max(Math.abs(puissanceArriereGauche), Math.abs(puissanceArriereDroit)));
+
+        // Si une puissance dépasse 1.0, normaliser toutes les puissances
+        if (maxPuissance > 1.0) {
+            puissanceAvantGauche /= maxPuissance;
+            puissanceAvantDroit /= maxPuissance;
+            puissanceArriereGauche /= maxPuissance;
+            puissanceArriereDroit /= maxPuissance;
+        }
+
+        // Application du multiplicateur de vitesse globale
+        puissanceAvantGauche *= vitesseMax;
+        puissanceAvantDroit *= vitesseMax;
+        puissanceArriereGauche *= vitesseMax;
+        puissanceArriereDroit *= vitesseMax;
+
+        // ===========================================
+        // SECTION 5: APPLICATION AUX MOTEURS
+        // ===========================================
+
+        frontLeftDrive.setPower(puissanceAvantGauche);
+        frontRightDrive.setPower(puissanceAvantDroit);
+        backLeftDrive.setPower(puissanceArriereGauche);
+        backRightDrive.setPower(puissanceArriereDroit);
+    }
 
 }   // end class
