@@ -250,6 +250,7 @@ public class ConceptAprilTagLocalization extends LinearOpMode {
                 // Only use tags that don't have Obelisk in them
                 if (detection.metadata.name.contains("BlueTarget")) {
                     telemetry.addLine(String.format("Centre %6.1f", detection.center.x));
+                    // Position de l'AprilTag dans l'image
                     if (detection.center.x > 340) {
                         telemetry.addLine(String.format("Tourner Droite"));
                         double rotation = 0.1;
@@ -272,7 +273,7 @@ public class ConceptAprilTagLocalization extends LinearOpMode {
         }   // end for() loop
         if (currentDetections.size()==0){
             telemetry.addLine(String.format("\n==== Rien trouvé"));
-            double rotation = 0.1;
+            double rotation = 0.2;
             tourner(rotation);
         }
 
