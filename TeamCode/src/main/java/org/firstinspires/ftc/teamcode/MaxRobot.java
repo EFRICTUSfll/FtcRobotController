@@ -46,8 +46,6 @@ public class MaxRobot extends LinearOpMode {
         backRightDrive.setPower(0);
     }
 
-
-
     private void gestionVitesse() {
         // ===========================================
         // SECTION 1: GESTION DE LA VITESSE AVEC D-PAD
@@ -127,8 +125,8 @@ public class MaxRobot extends LinearOpMode {
         // strafe right, and rotate
         double frontLeftPower = forward + right + rotate;
         double frontRightPower = forward - right - rotate;
-        double backRightPower = forward - right + rotate;
-        double backLeftPower = forward + right - rotate;
+        double backRightPower = forward + right - rotate;
+        double backLeftPower = forward - right + rotate;
 
         double maxPower = 1.0;
         double maxSpeed = 1.0;  // make this slower for outreaches
@@ -149,7 +147,6 @@ public class MaxRobot extends LinearOpMode {
         backLeftDrive.setPower(maxSpeed * (backLeftPower / maxPower));
         backRightDrive.setPower(maxSpeed * (backRightPower / maxPower));
     }
-
 
 
 
