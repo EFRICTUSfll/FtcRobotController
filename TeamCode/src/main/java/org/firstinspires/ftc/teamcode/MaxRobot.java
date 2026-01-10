@@ -18,25 +18,12 @@ public class MaxRobot extends LinearOpMode {
     DcMotor backLeftDrive;
     DcMotor backRightDrive;
 
-    // =========================
-    // ARM MOTORS (ELEVATION)
-    // =========================
-    DcMotor leftArm;
-    DcMotor rightArm;
 
-    // =========================
-    // INTAKE SERVO
-    // =========================
-    CRServo ramassage;
+    CRServo servoMoteurRamassageBalle;
 
-    // =========================
-    // IMU
-    // =========================
     IMU imu;
 
-    // =========================
-    // GLOBAL SPEED
-    // =========================
+
     private double vitesseDeplacement = 0.7;
 
     // =========================
@@ -83,20 +70,8 @@ public class MaxRobot extends LinearOpMode {
                 ramassageActif = !ramassageActif;
             }
 
-            ramassage.setPower(ramassageActif ? 1.0 : 0.0);
+            servoMoteurRamassageBalle.setPower(ramassageActif ? 1.0 : 0.0);
             l1Precedent = l1Actuel;
-
-            // =========================
-            // ARM ELEVATION (L2 / R2)
-            // =========================
-            double armUp   = gamepad1.right_trigger; // R2
-            double armDown = gamepad1.left_trigger;  // L2
-
-            double armPower = armUp - armDown;
-            armPower *= 0.6; // precision & stability
-
-            leftArm.setPower(armPower);
-            rightArm.setPower(armPower);
 
             telemetry.update();
         }
@@ -108,9 +83,7 @@ public class MaxRobot extends LinearOpMode {
         frontRightDrive.setPower(0);
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
-        leftArm.setPower(0);
-        rightArm.setPower(0);
-        ramassage.setPower(0);
+        servoMoteurRamassageBalle.setPower(0);
     }
 
     // ==================================================
@@ -121,13 +94,13 @@ public class MaxRobot extends LinearOpMode {
         if (gamepad1.dpad_up && !gamepad1.dpad_down) {
             vitesseDeplacement += 0.1;
             if (vitesseDeplacement > 1.0) vitesseDeplacement = 1.0;
-            sleep(200);
+//            sleep(200);
         }
 
         if (gamepad1.dpad_down && !gamepad1.dpad_up) {
             vitesseDeplacement -= 0.1;
             if (vitesseDeplacement < 0.1) vitesseDeplacement = 0.1;
-            sleep(200);
+  //          sleep(200);
         }
     }
 
@@ -141,30 +114,19 @@ public class MaxRobot extends LinearOpMode {
         backRightDrive  = hardwareMap.get(DcMotor.class, "dosDroit");
         backLeftDrive   = hardwareMap.get(DcMotor.class, "dosGauche");
 
-        leftArm  = hardwareMap.get(DcMotor.class, "leftArm");
-        rightArm = hardwareMap.get(DcMotor.class, "rightArm");
 
-        ramassage = hardwareMap.get(CRServo.class, "ramassage");
+        servoMoteurRamassageBalle = hardwareMap.get(CRServo.class, "ramassage");
 
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        leftArm.setDirection(DcMotor.Direction.FORWARD);
-        rightArm.setDirection(DcMotor.Direction.FORWARD);
-
-        // BRAKE = ultra stable hold
-        leftArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        leftArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         imu = hardwareMap.get(IMU.class, "imu");
 
