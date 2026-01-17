@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -15,7 +14,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor.TagFamily;
 
 import java.util.List;
 
-@TeleOp(name = "Test Vision Simple", group = "Test")
+//@TeleOp(name = "Test Vision Simple", group = "Test")
 public class SimpleVisionTest extends LinearOpMode {
 
     private AprilTagProcessor aprilTag;

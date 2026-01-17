@@ -53,14 +53,18 @@ public class MaxRobot extends LinearOpMode {
     }
 
     private void gestionRamassage() {
-        boolean l1Actuel = gamepad1.left_bumper;
+        boolean valeurL1 = gamepad1.left_bumper;
 
-        if (l1Actuel && !etatPrecedentL1) {
+        if (valeurL1) {
             estRamassageActif = !estRamassageActif;
         }
 
-        servoMoteurRamassageBalle.setPower(estRamassageActif ? 1.0 : 0.0);
-        etatPrecedentL1 = l1Actuel;
+        if (estRamassageActif) {
+            servoMoteurRamassageBalle.setPower(0.1);
+        } else {
+            servoMoteurRamassageBalle.setPower(0.0);
+        }
+        sleep(200);
     }
 
     private void gestionVitesseDeplacement() {
@@ -73,7 +77,7 @@ public class MaxRobot extends LinearOpMode {
         if (gamepad1.dpad_down && !gamepad1.dpad_up) {
             vitesseDeplacement -= 0.1;
             if (vitesseDeplacement < 0.1) vitesseDeplacement = 0.1;
-  //          sleep(200);
+            //          sleep(200);
         }
     }
 
@@ -100,7 +104,7 @@ public class MaxRobot extends LinearOpMode {
         imu.initialize(new IMU.Parameters(
                 new RevHubOrientationOnRobot(
                         RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD, // A FAIRE
-                        RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
+                        RevHubOrientationOnRobot.UsbFacingDirection.UP
                 )
         ));
     }
@@ -108,15 +112,15 @@ public class MaxRobot extends LinearOpMode {
     public void deplacement() {
         // joystick Droit:  rotation mecanum
         double forward = -gamepad1.right_stick_y;
-        double right   =  gamepad1.right_stick_x;
+        double right = gamepad1.right_stick_x;
 
         // joystick Gauche : rotation
-        double rotate  =  gamepad1.left_stick_x;
+        double rotate = gamepad1.left_stick_x;
 
-        double frontLeftPower  = forward + right + rotate;
+        double frontLeftPower = forward + right + rotate;
         double frontRightPower = forward - right - rotate;
-        double backRightPower  = forward + right - rotate;
-        double backLeftPower   = forward - right + rotate;
+        double backRightPower = forward + right - rotate;
+        double backLeftPower = forward - right + rotate;
 
         double maxPower = Math.max(
                 Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower)),
@@ -124,15 +128,25 @@ public class MaxRobot extends LinearOpMode {
         );
 
         if (maxPower > 1.0) {
-            frontLeftPower  /= maxPower;
+            frontLeftPower /= maxPower;
             frontRightPower /= maxPower;
-            backLeftPower   /= maxPower;
-            backRightPower  /= maxPower;
+            backLeftPower /= maxPower;
+            backRightPower /= maxPower;
         }
 
         moteurAvantGauche.setPower(vitesseDeplacement * frontLeftPower);
         moteurAvantDroit.setPower(vitesseDeplacement * frontRightPower);
         moteurArriereGauche.setPower(vitesseDeplacement * backLeftPower);
         moteurArriereDroit.setPower(vitesseDeplacement * backRightPower);
+
+        telemetry.addData("Moteurs", "AV-G: %.2f, AV-D: %.2f, AR-G: %.2f, AR-D: %.2f",
+                frontLeftPower, frontRightPower,
+                backLeftPower, backRightPower);
+
+        telemetry.addData("Variable", "Forward: %.2f, Right: %.2f, Rotate: %.2f",
+                forward, right,
+                rotate);
+
+        //sleep(200);
     }
 }
