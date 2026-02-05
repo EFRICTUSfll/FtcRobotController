@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-
 @TeleOp(name = "MAX")
 public class MaxRobotFTC extends LinearOpMode {
     DcMotor moteurAvantGauche;
@@ -34,7 +33,7 @@ public class MaxRobotFTC extends LinearOpMode {
     private boolean estRamassageActif = false;
     private boolean montageActif = false;
 
-    private int positionAngleShooter = 1;  // Position actuelle : 1, 2, ou 3
+    private int positionAngleShooter = -1;  // Position actuelle : 1, 2, ou 3
 
     // ===================================
     // Augmente la fluidité du robot, car plus de 10K = pas stable
@@ -181,7 +180,7 @@ public class MaxRobotFTC extends LinearOpMode {
         }
 
         if (shooterActif) {
-            shooter.setPower(-0.7);
+            shooter.setPower(-1);
         } else {
             shooter.setPower(0.0);
         }
@@ -190,17 +189,17 @@ public class MaxRobotFTC extends LinearOpMode {
 
     private void gestionAngleShooter() {
 
-        final double POSITION_1 = 0.0;    // 0° → setPosition(0.0)
-        final double POSITION_2 = 0.11;   // ~20° → setPosition(0.11) sur un servo 180°
-        final double POSITION_3 = 0.22;   // ~40° → setPosition(0.22)
+        final double POSITION_1 = -0.0;    // 0° → setPosition(0.0)
+        final double POSITION_2 = -0.11;   // ~20° → setPosition(0.11) sur un servo 180°
+        final double POSITION_3 = -0.22;   // ~40° → setPosition(0.22)
 
         // Debounce : on ne lit le bouton cercle que toutes les 200ms
         if (tempsDebounceAngleShooter.milliseconds() > 200) {
             if (gamepad1.circle) {
                 // Passer à la position suivante (cycle 1→2→3→1)
                 positionAngleShooter++;
-                if (positionAngleShooter > 3) {
-                    positionAngleShooter = 1;
+                if (positionAngleShooter > -3) {
+                    positionAngleShooter = -1;
                 }
                 tempsDebounceAngleShooter.reset();
             }

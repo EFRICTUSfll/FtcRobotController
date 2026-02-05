@@ -1,4 +1,32 @@
-package org.firstinspires.ftc.teamcode;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+/*import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+/*package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -16,6 +44,7 @@ import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.PathChain;
+
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -99,6 +128,7 @@ public class AutonomePedroPathing extends LinearOpMode {
                 telemetry.addData("Path", "1 - En cours");
                 telemetry.addData("Position", follower.getPose().toString());
                 telemetry.update();
+
             }
 
             // PATH 2 : Courbe avec shooter actif
@@ -149,6 +179,7 @@ public class AutonomePedroPathing extends LinearOpMode {
     /**
      * INITIALISATION COMPLÈTE DU ROBOT
      */
+/*
     private void initialisationRobot() {
         // Moteurs de déplacement
         moteurAvantDroit = hardwareMap.get(DcMotor.class, "avantDroit");
@@ -222,6 +253,7 @@ public class AutonomePedroPathing extends LinearOpMode {
     /**
      * Active ou désactive le shooter
      */
+/*
     private void activerShooter(boolean actif) {
         if (actif) {
             shooter.setPower(-0.7);
@@ -235,6 +267,8 @@ public class AutonomePedroPathing extends LinearOpMode {
     /**
      * Active ou désactive le ramassage
      */
+
+/*
     private void activerRamassage(boolean actif) {
         if (actif) {
             servoMoteurRamassageBalle.setPower(-1.0);
@@ -250,6 +284,8 @@ public class AutonomePedroPathing extends LinearOpMode {
     /**
      * Active ou désactive le montage
      */
+
+/*
     private void activerMontage(boolean actif) {
         if (actif) {
             servoMontageGauche.setPower(-0.7);
@@ -266,6 +302,8 @@ public class AutonomePedroPathing extends LinearOpMode {
      * Rotation du turret (shooter)
      * @param vitesse -1.0 (gauche) à +1.0 (droite), 0 = arrêt
      */
+
+/*
     private void tournerTurret(double vitesse) {
         servoTurret.setPower(vitesse * 0.4);  // 0.4 = vitesse max
     }
@@ -274,6 +312,8 @@ public class AutonomePedroPathing extends LinearOpMode {
      * Change l'angle du shooter
      * @param position 0=bas, 1=milieu, 2=haut
      */
+
+/*
     private void setAngleShooter(int position) {
         switch (position) {
             case 0:
@@ -294,6 +334,7 @@ public class AutonomePedroPathing extends LinearOpMode {
     /**
      * Arrête tous les moteurs et servos
      */
+/*
     private void arretTout() {
         moteurAvantGauche.setPower(0);
         moteurAvantDroit.setPower(0);
@@ -347,3 +388,4 @@ public class AutonomePedroPathing extends LinearOpMode {
         }
     }
 }
+*/

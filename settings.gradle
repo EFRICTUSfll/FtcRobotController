@@ -1,2 +1,12 @@
 include ':FtcRobotController'
 include ':TeamCode'
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+include ':FtcRobotController'
+include ':TeamCode'
