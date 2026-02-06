@@ -14,12 +14,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @TeleOp(name = "MAX")
-public class MaxRobotFTC extends LinearOpMode {
+public class MaxAngle extends LinearOpMode {
     DcMotor moteurAvantGauche;
     DcMotor moteurAvantDroit;
     DcMotor moteurArriereGauche;
     DcMotor moteurArriereDroit;
-    DcMotorEx shooter;  // ← CHANGÉ en DcMotorEx pour le PID
+    DcMotorEx shooter;
     DcMotor montageMoteur;
 
     CRServo servoRamassageBalle;
@@ -36,25 +36,31 @@ public class MaxRobotFTC extends LinearOpMode {
     private boolean estRamassageActif = false;
     private boolean montageActif = false;
 
-    private int positionAngleShooter = 1;  // Position actuelle : 1, 2, ou 3
+    private int positionAngleShooter = 1;
 
     // ===================================
     // CONSTANTES PID SHOOTER
     // ===================================
-    private static final double SHOOTER_P = 15.0;   // Proportionnel
-    private static final double SHOOTER_I = 5.1;    // Intégral
-    private static final double SHOOTER_D = 0.5;    // Dérivé
-    private static final double SHOOTER_F = 10.5;   // Feed-forward (compensation friction)
-
-    private static final double SHOOTER_VITESSE_CIBLE = 2200.0;  // Vitesse en ticks/sec
-    private static final double SHOOTER_TOLERANCE = 10.0;         // Tolérance en ticks/sec
+    private static final double SHOOTER_P = 15.0;
+    private static final double SHOOTER_I = 5.1;
+    private static final double SHOOTER_D = 0.5;
+    private static final double SHOOTER_F = 10.5;
 
     // ===================================
-    // CONSTANTES SERVO ANGLE (POSITIONS EXACTES)
+    // VITESSES SHOOTER PAR POSITION (MODIFIÉ)
     // ===================================
-    private static final double ANGLE_POSITION_1 = 1.0;    // Position basse
-    private static final double ANGLE_POSITION_2 = 0.5;    // Position moyenne
-    private static final double ANGLE_POSITION_3 = 0.0;    // Position haute
+    private static final double SHOOTER_VITESSE_POSITION_1 = 2000.0;  // Position Basse
+    private static final double SHOOTER_VITESSE_POSITION_2 = 2200.0;  // Position Milieu
+    private static final double SHOOTER_VITESSE_POSITION_3 = 2400.0;  // Position Haute
+
+    private static final double SHOOTER_TOLERANCE = 10.0;
+
+    // ===================================
+    // Angle shooter - 3 Positions Possible
+    // ===================================
+    private static final double ANGLE_POSITION_1 = 1.0;
+    private static final double ANGLE_POSITION_2 = 0.5;
+    private static final double ANGLE_POSITION_3 = 0.0;
 
     // ===================================
     // Augmente la fluidité du robot
@@ -78,7 +84,7 @@ public class MaxRobotFTC extends LinearOpMode {
     @Override
     public void runOpMode() {
         initialisationDuRobot();
-        configurerPIDShooter();  // ← NOUVELLE FONCTION
+        configurerPIDShooter();
         waitForStart();
 
         tempsLoop.reset();
@@ -89,7 +95,7 @@ public class MaxRobotFTC extends LinearOpMode {
             gestionRamassage();
             rotationTurret();
             gestionMontage();
-            gestionShooterPID();      // ← CHANGÉ
+            gestionShooterPID();
             gestionAngleShooter();
 
             telemetry.update();
@@ -102,7 +108,6 @@ public class MaxRobotFTC extends LinearOpMode {
     // CONFIGURATION PID DU SHOOTER
     // ===================================
     private void configurerPIDShooter() {
-        // Définir les coefficients PIDF
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(
                 SHOOTER_P,
                 SHOOTER_I,
@@ -110,10 +115,7 @@ public class MaxRobotFTC extends LinearOpMode {
                 SHOOTER_F
         );
 
-        // Appliquer les coefficients au moteur
         shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-
-        // Mode velocity control
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         telemetry.addData("PID Shooter", "Configuré: P=%.1f, I=%.1f, D=%.1f, F=%.1f",
@@ -122,10 +124,9 @@ public class MaxRobotFTC extends LinearOpMode {
     }
 
     // ===================================
-    // GESTION SHOOTER AVEC PID
+    // Shooter avec PIDF
     // ===================================
     private void gestionShooterPID() {
-        // Debounce : on ne lit le bouton que toutes les 150ms
         if (tempsDebounceShooter.milliseconds() > 150) {
             if (gamepad1.triangle) {
                 shooterActif = !shooterActif;
@@ -134,17 +135,30 @@ public class MaxRobotFTC extends LinearOpMode {
         }
 
         if (shooterActif) {
-            // Utiliser setVelocity pour le contrôle PID précis
-            shooter.setVelocity(SHOOTER_VITESSE_CIBLE);
+            // ===== SÉLECTION DE LA VITESSE SELON LA POSITION =====
+            double vitesseCible = SHOOTER_VITESSE_POSITION_1;  // Par défaut
 
-            // Vérifier si on est à la vitesse cible
+            switch (positionAngleShooter) {
+                case 1:
+                    vitesseCible = SHOOTER_VITESSE_POSITION_1;
+                    break;
+                case 2:
+                    vitesseCible = SHOOTER_VITESSE_POSITION_2;
+                    break;
+                case 3:
+                    vitesseCible = SHOOTER_VITESSE_POSITION_3;
+                    break;
+            }
+
+            shooter.setVelocity(vitesseCible);
+
             double vitesseActuelle = shooter.getVelocity();
-            boolean aLaVitesse = Math.abs(vitesseActuelle - SHOOTER_VITESSE_CIBLE) < SHOOTER_TOLERANCE;
+            boolean aLaVitesse = Math.abs(vitesseActuelle - vitesseCible) < SHOOTER_TOLERANCE;
 
             telemetry.addData("Shooter", "ACTIF");
-            telemetry.addData("Vitesse Cible", "%.0f ticks/sec", SHOOTER_VITESSE_CIBLE);
+            telemetry.addData("Vitesse Cible", "%.0f ticks/sec", vitesseCible);
             telemetry.addData("Vitesse Actuelle", "%.0f ticks/sec", vitesseActuelle);
-            telemetry.addData("Erreur", "%.0f ticks/sec", SHOOTER_VITESSE_CIBLE - vitesseActuelle);
+            telemetry.addData("Erreur", "%.0f ticks/sec", vitesseCible - vitesseActuelle);
             telemetry.addData("Prêt à tirer", aLaVitesse ? "OUI ✓" : "NON...");
         } else {
             shooter.setVelocity(0);
@@ -153,13 +167,11 @@ public class MaxRobotFTC extends LinearOpMode {
     }
 
     // ===================================
-    // GESTION ANGLE SHOOTER (CORRIGÉ)
+    // GESTION ANGLE SHOOTER
     // ===================================
     private void gestionAngleShooter() {
-        // Debounce : on ne lit le bouton cercle que toutes les 200ms
         if (tempsDebounceAngleShooter.milliseconds() > 200) {
             if (gamepad1.circle) {
-                // Passer à la position suivante (cycle 1→2→3→1)
                 positionAngleShooter++;
                 if (positionAngleShooter > 3) {
                     positionAngleShooter = 1;
@@ -168,7 +180,6 @@ public class MaxRobotFTC extends LinearOpMode {
             }
         }
 
-        // Appliquer la position au servo (CORRIGÉ)
         double positionCible = ANGLE_POSITION_1;
 
         switch (positionAngleShooter) {
@@ -188,7 +199,7 @@ public class MaxRobotFTC extends LinearOpMode {
         telemetry.addData("Angle Shooter", "Position %d/3 (%.2f)", positionAngleShooter, positionCible);
     }
 
-    private static final double VITESSE_TURRET = 0.5; // vitesse de base 0,4
+    private static final double VITESSE_TURRET = 0.5;
 
     private void rotationTurret() {
         float gachetteGauche = gamepad1.left_trigger;
@@ -210,7 +221,7 @@ public class MaxRobotFTC extends LinearOpMode {
         moteurAvantDroit.setPower(0);
         moteurArriereGauche.setPower(0);
         moteurArriereDroit.setPower(0);
-        shooter.setVelocity(0);  // ← CHANGÉ pour PID
+        shooter.setVelocity(0);
         montageMoteur.setPower(0);
         servoMoteurRamassageBalle.setPower(0);
         servoTurret.setPower(0);
@@ -275,7 +286,7 @@ public class MaxRobotFTC extends LinearOpMode {
         moteurAvantGauche = hardwareMap.get(DcMotor.class, "avantGauche");
         moteurArriereDroit = hardwareMap.get(DcMotor.class, "dosDroit");
         moteurArriereGauche = hardwareMap.get(DcMotor.class, "dosGauche");
-        shooter = hardwareMap.get(DcMotorEx.class, "shooter");  // ← DcMotorEx pour PID
+        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         montageMoteur = hardwareMap.get(DcMotor.class, "montage");
 
         servoMoteurRamassageBalle = hardwareMap.get(CRServo.class, "ramassage");
@@ -284,7 +295,6 @@ public class MaxRobotFTC extends LinearOpMode {
         servoMontageGauche = hardwareMap.get(CRServo.class, "montageGauche");
         servoAngleShooter = hardwareMap.get(Servo.class, "angleShooter");
 
-        // Position initiale de l'angle shooter : position 1
         servoAngleShooter.setPosition(ANGLE_POSITION_1);
 
         moteurAvantDroit.setDirection(DcMotor.Direction.REVERSE);
@@ -298,7 +308,7 @@ public class MaxRobotFTC extends LinearOpMode {
         moteurAvantDroit.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         moteurArriereGauche.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         moteurArriereDroit.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // PID activé
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         montageMoteur.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         moteurAvantGauche.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -316,9 +326,6 @@ public class MaxRobotFTC extends LinearOpMode {
         ));
     }
 
-    // ===================================
-    // DÉPLACEMENT FLUIDE (INCHANGÉ)
-    // ===================================
     public void deplacementFluide() {
         double forward = -gamepad1.right_stick_y;
         double right = gamepad1.right_stick_x;
