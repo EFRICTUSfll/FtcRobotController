@@ -49,9 +49,9 @@ public class MaxAngle extends LinearOpMode {
     // ===================================
     // VITESSES SHOOTER PAR POSITION (MODIFIÉ)
     // ===================================
-    private static final double SHOOTER_VITESSE_POSITION_1 = 2000.0;  // Position Basse
-    private static final double SHOOTER_VITESSE_POSITION_2 = 2200.0;  // Position Milieu
-    private static final double SHOOTER_VITESSE_POSITION_3 = 2400.0;  // Position Haute
+    private static final double SHOOTER_VITESSE_POSITION_1 = 1100.0;  // Position Basse
+    private static final double SHOOTER_VITESSE_POSITION_2 = 15000.0;  // Position Milieu
+    private static final double SHOOTER_VITESSE_POSITION_3 = 2100.0;  // Position Haute
 
     private static final double SHOOTER_TOLERANCE = 10.0;
 
@@ -118,9 +118,9 @@ public class MaxAngle extends LinearOpMode {
         shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        telemetry.addData("PID Shooter", "Configuré: P=%.1f, I=%.1f, D=%.1f, F=%.1f",
-                SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F);
-        telemetry.update();
+        //telemetry.addData("PID Shooter", "Configuré: P=%.1f, I=%.1f, D=%.1f, F=%.1f",
+        //        SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F);
+        //telemetry.update();
     }
 
     // ===================================
@@ -155,14 +155,14 @@ public class MaxAngle extends LinearOpMode {
             double vitesseActuelle = shooter.getVelocity();
             boolean aLaVitesse = Math.abs(vitesseActuelle - vitesseCible) < SHOOTER_TOLERANCE;
 
-            telemetry.addData("Shooter", "ACTIF");
-            telemetry.addData("Vitesse Cible", "%.0f ticks/sec", vitesseCible);
-            telemetry.addData("Vitesse Actuelle", "%.0f ticks/sec", vitesseActuelle);
-            telemetry.addData("Erreur", "%.0f ticks/sec", vitesseCible - vitesseActuelle);
-            telemetry.addData("Prêt à tirer", aLaVitesse ? "OUI ✓" : "NON...");
+            //telemetry.addData("Shooter", "ACTIF");
+            //telemetry.addData("Vitesse Cible", "%.0f ticks/sec", vitesseCible);
+            //telemetry.addData("Vitesse Actuelle", "%.0f ticks/sec", vitesseActuelle);
+            //telemetry.addData("Erreur", "%.0f ticks/sec", vitesseCible - vitesseActuelle);
+            //telemetry.addData("Prêt à tirer", aLaVitesse ? "OUI ✓" : "NON...");
         } else {
             shooter.setVelocity(0);
-            telemetry.addData("Shooter", "ARRÊTÉ");
+            //telemetry.addData("Shooter", "ARRÊTÉ");
         }
     }
 
@@ -230,7 +230,7 @@ public class MaxAngle extends LinearOpMode {
     }
 
     private void gestionMontage() {
-        if (tempsDebonceMontage.milliseconds() > 150) {
+        if (tempsDebonceMontage.milliseconds() > 400) {
             if (gamepad1.x) {
                 montageActif = !montageActif;
                 tempsDebonceMontage.reset();
@@ -278,7 +278,7 @@ public class MaxAngle extends LinearOpMode {
             }
         }
 
-        telemetry.addData("Vitesse Deplacement", "%.0f%%", vitesseDeplacement * 100);
+        //telemetry.addData("Vitesse Deplacement", "%.0f%%", vitesseDeplacement * 100);
     }
 
     private void initialisationDuRobot() {
@@ -362,7 +362,7 @@ public class MaxAngle extends LinearOpMode {
         moteurArriereGauche.setPower(vitesseDeplacement * puissanceArriereGaucheActuelle);
         moteurArriereDroit.setPower(vitesseDeplacement * puissanceArriereDroitActuelle);
 
-        telemetry.addData("Vitesse Max", "%.0f%%", vitesseDeplacement * 100);
+        //telemetry.addData("Vitesse Max", "%.0f%%", vitesseDeplacement * 100);
     }
 
     private double appliquerRampe(double valeurActuelle, double valeurCible) {

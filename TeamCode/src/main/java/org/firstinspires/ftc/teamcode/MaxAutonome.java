@@ -56,27 +56,25 @@ public class MaxAutonome extends LinearOpMode {
     public void runOpMode() {
         initialisationRobot();
 
-        telemetry.addData("✅ Status", "Robot prêt - goBILDA Odometry");
-        telemetry.addData("📍 Mission", "Avancer 1m puis tourner 90° droite");
-        telemetry.addData("🎯 Angle Shooter", "Position BASSE");
-        telemetry.addData("⚠️ VÉRIFIE", "Pods touchent le sol !");
-        telemetry.update();
+        //telemetry.addData("✅ Status", "Robot prêt - goBILDA Odometry");
+        //telemetry.addData("📍 Mission", "Avancer 1m puis tourner 90° droite");
+        //telemetry.addData("🎯 Angle Shooter", "Position BASSE");
+        //telemetry.addData("⚠️ VÉRIFIE", "Pods touchent le sol !");
+        //telemetry.update();
 
         waitForStart();
         runtime.reset();
 
         if (opModeIsActive()) {
             // ÉTAPE 1 : Avancer de 100 cm
-            telemetry.addData("📍 Étape 1", "Avance de 1 mètre");
-            telemetry.update();
             avancerDistance(100);
 
             sleep(500);
 
+            avancerDistance(100);
+
             // ÉTAPE 2 : Tourner à droite de 90°
-            telemetry.addData("🔄 Étape 2", "Rotation 90° droite");
-            telemetry.update();
-            tournerAngle(90);
+            //tournerAngle(90);
 
             sleep(500);
 
