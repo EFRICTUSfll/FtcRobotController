@@ -28,7 +28,6 @@ public class MaxRobot extends LinearOpMode {
     DcMotor moteurAvantDroit;
     DcMotor moteurArriereGauche;
     DcMotor moteurArriereDroit;
-
     CRServo servoMoteurRamassageBalle;
 
     CRServo servoMoteurShooter;

@@ -19,7 +19,7 @@ public class MaxRobotFTC extends LinearOpMode {
     DcMotor moteurAvantDroit;
     DcMotor moteurArriereGauche;
     DcMotor moteurArriereDroit;
-    DcMotorEx shooter;  // ← CHANGÉ en DcMotorEx pour le PID
+    DcMotorEx shooter;  // ← CHANGÉ en DcMotorEx pour le PIDF
     DcMotor montageMoteur;
 
     CRServo servoRamassageBalle;

@@ -20,18 +20,20 @@ public class MaxAngle extends LinearOpMode {
     DcMotor moteurArriereGauche;
     DcMotor moteurArriereDroit;
     DcMotorEx shooter;
-    DcMotor montageMoteur;
+    DcMotor intakeMoteur;
+    DcMotor montageGauche;
+    DcMotor montageDroit;
 
-    CRServo servoRamassageBalle;
+
+    CRServo servoRamassageDroit;
+    CRServo servoRamassageGauche;
     CRServo servoMoteurRamassageBalle;
-    CRServo servoMontageGauche;
     CRServo servoTurret;
     Servo servoAngleShooter;
 
     IMU imu;
 
     private double vitesseDeplacement = 0.7;
-
     private boolean shooterActif = false;
     private boolean estRamassageActif = false;
     private boolean montageActif = false;
@@ -100,7 +102,6 @@ public class MaxAngle extends LinearOpMode {
 
             telemetry.update();
         }
-
         arretMoteurs();
     }
 
@@ -221,12 +222,17 @@ public class MaxAngle extends LinearOpMode {
         moteurAvantDroit.setPower(0);
         moteurArriereGauche.setPower(0);
         moteurArriereDroit.setPower(0);
+
         shooter.setVelocity(0);
-        montageMoteur.setPower(0);
+        intakeMoteur.setPower(0);
+        montageDroit.setPower(0);
+        montageGauche.setPower(0);
+
         servoMoteurRamassageBalle.setPower(0);
         servoTurret.setPower(0);
-        servoRamassageBalle.setPower(0);
-        servoMontageGauche.setPower(0);
+        servoRamassageDroit.setPower(0);
+        servoRamassageGauche.setPower(0);
+        servoAngleShooter.setPosition(0);
     }
 
     private void gestionMontage() {
@@ -238,11 +244,18 @@ public class MaxAngle extends LinearOpMode {
         }
 
         if (montageActif) {
-            servoMontageGauche.setPower(0.7);
-            montageMoteur.setPower(-0.7);
+
+            servoRamassageGauche.setPower(1.0);
+            servoRamassageDroit.setPower(-1.0);
+            servoMoteurRamassageBalle.setPower(0.5);
+            montageGauche.setPower(1.0); // normalemtnt négatif mais j'ai changer sur l'initialisation
+            montageDroit.setPower(1.0);
         } else {
-            servoMontageGauche.setPower(0.0);
-            montageMoteur.setPower(0.0);
+            servoRamassageGauche.setPower(0.0);
+            servoRamassageDroit.setPower(0.0);
+            intakeMoteur.setPower(0.0);
+            montageGauche.setPower(0.0);
+            montageDroit.setPower(0.0);
         }
     }
 
@@ -253,13 +266,12 @@ public class MaxAngle extends LinearOpMode {
                 tempsDebounceRamassage.reset();
             }
         }
-
         if (estRamassageActif) {
+            intakeMoteur.setPower(0.7);
             servoMoteurRamassageBalle.setPower(-1.0);
-            servoRamassageBalle.setPower(1.0);
         } else {
+            intakeMoteur.setPower(0.0);
             servoMoteurRamassageBalle.setPower(0.0);
-            servoRamassageBalle.setPower(0.0);
         }
     }
 
@@ -282,18 +294,22 @@ public class MaxAngle extends LinearOpMode {
     }
 
     private void initialisationDuRobot() {
-        moteurAvantDroit = hardwareMap.get(DcMotor.class, "avantDroit");
-        moteurAvantGauche = hardwareMap.get(DcMotor.class, "avantGauche");
-        moteurArriereDroit = hardwareMap.get(DcMotor.class, "dosDroit");
-        moteurArriereGauche = hardwareMap.get(DcMotor.class, "dosGauche");
-        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
-        montageMoteur = hardwareMap.get(DcMotor.class, "montage");
+        moteurAvantDroit = hardwareMap.get(DcMotor.class, "avantDroit"); // 1
+        moteurAvantGauche = hardwareMap.get(DcMotor.class, "avantGauche"); // 2
+        moteurArriereDroit = hardwareMap.get(DcMotor.class, "dosDroit"); // 3
+        moteurArriereGauche = hardwareMap.get(DcMotor.class, "dosGauche"); // 4
+        shooter = hardwareMap.get(DcMotorEx.class, "shooter"); // position 1
+        intakeMoteur = hardwareMap.get(DcMotor.class, "intake"); // position 2
+        montageGauche = hardwareMap.get(DcMotor.class, "montageG"); // position 4
+        montageDroit = hardwareMap.get(DcMotor.class, "montageD"); // position 3
 
-        servoMoteurRamassageBalle = hardwareMap.get(CRServo.class, "ramassage");
-        servoRamassageBalle = hardwareMap.get(CRServo.class, "ramassage2");
-        servoTurret = hardwareMap.get(CRServo.class, "rotationShooter");
-        servoMontageGauche = hardwareMap.get(CRServo.class, "montageGauche");
-        servoAngleShooter = hardwareMap.get(Servo.class, "angleShooter");
+
+        servoMoteurRamassageBalle = hardwareMap.get(CRServo.class, "ramassage"); // position 0
+        servoRamassageDroit = hardwareMap.get(CRServo.class, "ramassageD"); // position 5
+        servoRamassageGauche = hardwareMap.get(CRServo.class, "ramassageG"); // position 1
+        servoTurret = hardwareMap.get(CRServo.class, "turret"); // position 4
+        servoAngleShooter = hardwareMap.get(Servo.class, "angleShooter"); // position 3
+        // Lumiere Gobilda position = 2
 
         servoAngleShooter.setPosition(ANGLE_POSITION_1);
 
@@ -302,14 +318,16 @@ public class MaxAngle extends LinearOpMode {
         moteurArriereDroit.setDirection(DcMotor.Direction.REVERSE);
         moteurArriereGauche.setDirection(DcMotor.Direction.FORWARD);
         shooter.setDirection(DcMotor.Direction.FORWARD);
-        montageMoteur.setDirection(DcMotor.Direction.REVERSE);
+        intakeMoteur.setDirection(DcMotor.Direction.REVERSE);
+        montageGauche.setDirection(DcMotor.Direction.REVERSE);
+        montageDroit.setDirection(DcMotorSimple.Direction.FORWARD);
 
         moteurAvantGauche.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         moteurAvantDroit.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         moteurArriereGauche.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         moteurArriereDroit.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        montageMoteur.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //intakeMoteur.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         moteurAvantGauche.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         moteurAvantDroit.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
