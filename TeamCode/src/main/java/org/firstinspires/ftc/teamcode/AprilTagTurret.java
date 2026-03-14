@@ -49,17 +49,17 @@ public class AprilTagTurret extends LinearOpMode {
     // ═══════════════════════════════════════════════════════════════
 
     // ID de l'AprilTag cible (-1 = n'importe lequel)
-    private static final int TARGET_TAG_ID = -1;
+    private static final int TARGET_TAG_ID = -1; // (Bleu = 20 | Rouge = 24)
 
     // Pipeline Limelight pour AprilTag (0 par défaut)
     private static final int LIMELIGHT_PIPELINE = 0;
 
     // Délai avant reprise du scan après perte du tag
-    private static final long LOST_TAG_TIMEOUT_MS = 3000; // 3 secondes
+    private static final long LOST_TAG_TIMEOUT_MS = 5000; // 5 secondes
 
-    // ═══════════════════════════════════════════════════════════════
+    // ══════════
     //  HARDWARE
-    // ═══════════════════════════════════════════════════════════════
+    // ══════════
     private Limelight3A limelight;
     private CRServo     turretServo; // ← CRServo (rotation continue)
     private Servo       light;       // ← Servo  (LED RGB)

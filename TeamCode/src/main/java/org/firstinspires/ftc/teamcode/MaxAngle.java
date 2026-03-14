@@ -13,8 +13,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@TeleOp(name = "MAX")
+@TeleOp(name = "MAX", group = "National")
 public class MaxAngle extends LinearOpMode {
+    public Servo light = null;
     DcMotor moteurAvantGauche;
     DcMotor moteurAvantDroit;
     DcMotor moteurArriereGauche;
@@ -83,10 +84,12 @@ public class MaxAngle extends LinearOpMode {
     private ElapsedTime tempsDebonceMontage = new ElapsedTime();
     private ElapsedTime tempsDebounceAngleShooter = new ElapsedTime();
 
+
     @Override
     public void runOpMode() {
         initialisationDuRobot();
         configurerPIDShooter();
+        light.setPosition(.160);
         waitForStart();
 
         tempsLoop.reset();
@@ -99,6 +102,7 @@ public class MaxAngle extends LinearOpMode {
             gestionMontage();
             gestionShooterPID();
             gestionAngleShooter();
+            light.setPosition(.500);
 
             telemetry.update();
         }
@@ -158,7 +162,7 @@ public class MaxAngle extends LinearOpMode {
 
             //telemetry.addData("Shooter", "ACTIF");
             //telemetry.addData("Vitesse Cible", "%.0f ticks/sec", vitesseCible);
-            //telemetry.addData("Vitesse Actuelle", "%.0f ticks/sec", vitesseActuelle);
+            telemetry.addData("Vitesse Actuelle", "%.0f ticks/sec", vitesseActuelle);
             //telemetry.addData("Erreur", "%.0f ticks/sec", vitesseCible - vitesseActuelle);
             //telemetry.addData("Prêt à tirer", aLaVitesse ? "OUI ✓" : "NON...");
         } else {
@@ -247,13 +251,13 @@ public class MaxAngle extends LinearOpMode {
 
             servoRamassageGauche.setPower(1.0);
             servoRamassageDroit.setPower(-1.0);
-            servoMoteurRamassageBalle.setPower(0.5);
+            servoMoteurRamassageBalle.setPower(-0.5);
             montageGauche.setPower(1.0); // normalemtnt négatif mais j'ai changer sur l'initialisation
             montageDroit.setPower(1.0);
         } else {
             servoRamassageGauche.setPower(0.0);
             servoRamassageDroit.setPower(0.0);
-            intakeMoteur.setPower(0.0);
+            servoMoteurRamassageBalle.setPower(0.0);
             montageGauche.setPower(0.0);
             montageDroit.setPower(0.0);
         }
@@ -303,13 +307,14 @@ public class MaxAngle extends LinearOpMode {
         montageGauche = hardwareMap.get(DcMotor.class, "montageG"); // position 4
         montageDroit = hardwareMap.get(DcMotor.class, "montageD"); // position 3
 
-
         servoMoteurRamassageBalle = hardwareMap.get(CRServo.class, "ramassage"); // position 0
         servoRamassageDroit = hardwareMap.get(CRServo.class, "ramassageD"); // position 5
         servoRamassageGauche = hardwareMap.get(CRServo.class, "ramassageG"); // position 1
         servoTurret = hardwareMap.get(CRServo.class, "turret"); // position 4
         servoAngleShooter = hardwareMap.get(Servo.class, "angleShooter"); // position 3
-        // Lumiere Gobilda position = 2
+        light = hardwareMap.get(Servo.class, "light"); // Lumiere Gobilda position = 2
+        light.setPosition(.388);
+
 
         servoAngleShooter.setPosition(ANGLE_POSITION_1);
 
@@ -317,10 +322,10 @@ public class MaxAngle extends LinearOpMode {
         moteurAvantGauche.setDirection(DcMotor.Direction.FORWARD);
         moteurArriereDroit.setDirection(DcMotor.Direction.REVERSE);
         moteurArriereGauche.setDirection(DcMotor.Direction.FORWARD);
-        shooter.setDirection(DcMotor.Direction.FORWARD);
+        shooter.setDirection(DcMotor.Direction.REVERSE);
         intakeMoteur.setDirection(DcMotor.Direction.REVERSE);
-        montageGauche.setDirection(DcMotor.Direction.REVERSE);
-        montageDroit.setDirection(DcMotorSimple.Direction.FORWARD);
+        montageGauche.setDirection(DcMotor.Direction.FORWARD);
+        montageDroit.setDirection(DcMotorSimple.Direction.REVERSE);
 
         moteurAvantGauche.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         moteurAvantDroit.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
