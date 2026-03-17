@@ -15,8 +15,6 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.List;
 
@@ -61,8 +59,8 @@ import java.util.List;
  *
  * ════════════════════════════════════════════════════════════
  */
-@TeleOp(name = "MAX- 31563", group = "National")
-public class MaxF extends LinearOpMode {
+@TeleOp(name = "MAX- TODAY", group = "National")
+public class BotFest extends LinearOpMode {
 
     // ════════════════════════════════════════════════════════
     //  HARDWARE
@@ -156,7 +154,7 @@ public class MaxF extends LinearOpMode {
     private static final double SHOOTER_F         = 11.7;  // 32767 / 2800 ticks/s max
 
     /** Tolérance en RPM pour déclarer le shooter "PRÊT". */
-    private static final double TOLERANCE_RPM     = 20.0;
+    private static final double TOLERANCE_RPM     = 50.0;
 
     // ════════════════════════════════════════════════════════
     //  PRESETS DE TIR
@@ -187,28 +185,15 @@ public class MaxF extends LinearOpMode {
     private static final double[][] PRESETS_TIR = {
             // { distanceCm, angleServo, RPM }
             //  angleServo MAX = 0.306 (= 110°, ne jamais dépasser)
-            /*
-            { 10.0,  0.30, 2000.0 },   // Preset  1 — ~10  cm
-            { 30.0,  0.28, 2500.0 },   // Preset  2 — ~30  cm
-            { 50.0,  0.26, 2600.0 },   // Preset  3 — ~50  cm
-            { 70.0,  0.24, 2800.0 },   // Preset  4 — ~70  cm
-            { 90.0,  0.22, 3400.0 },   // Preset  5 — ~90  cm
-            {110.0,  0.20, 3500.0 },   // Preset  6 — ~110 cm
-            {130.0,  0.18, 3600.0 },   // Preset  7 — ~130 cm
-            {150.0,  0.15, 3800.0 },   // Preset  8 — ~150 cm
-            {175.0,  0.11, 4000.0 },   // Preset  9 — ~175 cm
-            {200.0,  0.07, 4000.0 },   // Preset 10 — ~200 cm
-
-             */
-            { 10.0,  0.30, 200.0 },   //JUSTE POUR VOIR SI YA UNE DIFF2RENCE
-            { 30.0,  0.28, 1000.0 },   // Preset  2 — ~30  cm
-            { 50.0,  0.26, 1500.0 },   // Preset  3 — ~50  cm
-            { 70.0,  0.24, 2000.0 },   // Preset  4 — ~70  cm
-            { 90.0,  0.22, 2500.0 },   // Preset  5 — ~90  cm
-            {110.0,  0.20, 3000.0 },   // Preset  6 — ~110 cm
-            {130.0,  0.18, 3500.0 },   // Preset  7 — ~130 cm
-            {150.0,  0.15, 4000.0 },   // Preset  8 — ~150 cm
-            {175.0,  0.11, 4000.0 },   // Preset  9 — ~175 cm
+            { 10.0,  0.30, 1200.0 },   // Preset  1 — ~10  cm
+            { 30.0,  0.28, 1500.0 },   // Preset  2 — ~30  cm
+            { 50.0,  0.26, 1800.0 },   // Preset  3 — ~50  cm
+            { 70.0,  0.24, 2100.0 },   // Preset  4 — ~70  cm
+            { 90.0,  0.22, 2400.0 },   // Preset  5 — ~90  cm
+            {110.0,  0.20, 2700.0 },   // Preset  6 — ~110 cm
+            {130.0,  0.18, 3000.0 },   // Preset  7 — ~130 cm
+            {150.0,  0.15, 3300.0 },   // Preset  8 — ~150 cm
+            {175.0,  0.11, 3600.0 },   // Preset  9 — ~175 cm
             {200.0,  0.07, 4000.0 },   // Preset 10 — ~200 cm
     };
 
@@ -234,7 +219,7 @@ public class MaxF extends LinearOpMode {
     //    Si tu veux une précision maximale → descends deadband (min ~1.0).
     // ════════════════════════════════════════════════════════
 
-    private static final int    TURRET_TAG_ID       = -1;   // -1 = suit n'importe quel tag (20 SI Team bleau et 24 si team RED)
+    private static final int    TURRET_TAG_ID       = -1;   // -1 = suit n'importe quel tag
 
     /**
      * Décalage en degrés à soustraire à tx après correction miroir.
@@ -253,7 +238,6 @@ public class MaxF extends LinearOpMode {
 
     private double      derniereTxTurret = 0.0;
     private ElapsedTime tempsTurret      = new ElapsedTime();
-    private boolean     tagVisible       = false; // mis à jour chaque loop pour la LED
 
     // ════════════════════════════════════════════════════════
     //  MODE HAUTE PARTIE
@@ -280,29 +264,6 @@ public class MaxF extends LinearOpMode {
     private static final double TAUX_ACCELERATION = 0.25;
     private static final double TAUX_DECELERATION = 0.35;
     private static final double SEUIL_MORT        = 0.05;
-
-    // ════════════════════════════════════════════════════════
-    //  STABILISATION À L'ARRÊT — GoBilda Pinpoint
-    //
-    //  Quand les deux joysticks sont relâchés, le Pinpoint mesure
-    //  la vitesse réelle du robot (mm/s). Si le robot glisse encore,
-    //  on applique une puissance inverse proportionnelle sur les roues
-    //  pour freiner activement.
-    //
-    //  ⚙️  POUR RECALIBRER :
-    //    Robot vibre/oscille à l'arrêt  → baisse KP_STABILISATION (ex: 0.20)
-    //    Robot continue de glisser      → monte KP_STABILISATION (ex: 0.50)
-    //    Correction se déclenche en mvt → monte SEUIL_ARRET_MMS (ex: 35)
-    // ════════════════════════════════════════════════════════
-
-    /** Gain proportionnel de la correction anti-glissement. */
-    private static final double KP_STABILISATION    = 0.35;
-
-    /** Vitesse (mm/s) en dessous de laquelle on active la correction. */
-    private static final double SEUIL_ARRET_MMS     = 20.0;
-
-    /** Puissance max de correction (évite les sursauts). */
-    private static final double MAX_CORRECTION_STAB = 0.18;
 
     // ════════════════════════════════════════════════════════
     //  ÉTATS BOOLÉENS
@@ -386,29 +347,24 @@ public class MaxF extends LinearOpMode {
     // ════════════════════════════════════════════════════════
 
     private void gestionHautAuto() {
-        LLResult result    = limelight.getLatestResult();
-        boolean  tagValide = (result != null && result.isValid() && result.getStaleness() <= 300);
-        FiducialResult tag = tagValide ? trouverTag(result) : null;
-        tagVisible         = (tag != null); // ← mise à jour état global pour LED
+        LLResult result     = limelight.getLatestResult();
+        boolean  tagValide  = (result != null && result.isValid() && result.getStaleness() <= 300);
+        FiducialResult tag  = tagValide ? trouverTag(result) : null;
 
         // ── Turret : suivi automatique ─────────────────────────
         suivreTurret(tag);
 
-        // ── Shooter : actif SEULEMENT si tag visible ──────────
-        // Si pas de tag → shooter s'arrête automatiquement
+        // ── Shooter : toujours actif en auto ──────────────────
+        shooterActif = true;
+
+        // ── Sélection auto du preset selon distance ────────────
         if (tag != null) {
-            shooterActif = true;
             double distanceCm = estimerDistance(tag.getTargetYDegrees());
             presetActif = choisirPreset(distanceCm);
-        } else {
-            shooterActif = false;
-            shooter.setVelocity(0);
-            servoAngleShooter.setPosition(PRESETS_TIR[0][1]); // angle repos
-            telemetry.addData("Shooter AUTO", "En attente du tag...");
-            return; // rien d'autre à faire sans tag
         }
+        // Si pas de tag, on garde le dernier preset actif
 
-        // Applique vitesse RPM et angle servo du preset sélectionné
+        // Applique la vitesse en RPM
         shooter.setVelocity(rpmEnTicks(PRESETS_TIR[presetActif][2]));
         servoAngleShooter.setPosition(PRESETS_TIR[presetActif][1]);
 
@@ -422,12 +378,12 @@ public class MaxF extends LinearOpMode {
         // ── Télémétrie ─────────────────────────────────────────
         double rpmActuel = ticksEnRpm(shooter.getVelocity());
         double rpmCible  = PRESETS_TIR[presetActif][2];
-        telemetry.addData("Tag ID",       tag.getFiducialId());
-        telemetry.addData("TX brut",      String.format("%.1f°  ← lis cette valeur pour calibrer TX_OFFSET_DEG", tag.getTargetXDegrees()));
-        telemetry.addData("TX corrigé",   String.format("%.1f°  (doit être ~0° quand centré)", -tag.getTargetXDegrees() - TX_OFFSET_DEG));
-        telemetry.addData("Preset auto",  String.format("%d — %.0f cm", presetActif + 1, PRESETS_TIR[presetActif][0]));
-        telemetry.addData("Angle servo",  String.format("%.3f  =  %.1f°", PRESETS_TIR[presetActif][1], PRESETS_TIR[presetActif][1] * 360.0));
-        telemetry.addData("Shooter",      String.format("%.0f / %.0f RPM  %s", rpmActuel, rpmCible, shooterPret ? "✅ PRÊT — appuie ○" : "⏳ ..."));
+        telemetry.addData("Tag", tag != null ? String.format("ID %d", tag.getFiducialId()) : "Aucun");
+        telemetry.addData("Preset auto", String.format("%d — %.0f cm", presetActif + 1, PRESETS_TIR[presetActif][0]));
+        telemetry.addData("Shooter", String.format("%.0f / %.0f RPM  %s",
+                rpmActuel, rpmCible, shooterPret ? "✅ PRÊT — appuie ○" : "⏳ ..."));
+        telemetry.addData("Angle servo", String.format("%.3f (%.1f°)",
+                PRESETS_TIR[presetActif][1], PRESETS_TIR[presetActif][1] * 360.0));
     }
 
     // ════════════════════════════════════════════════════════
@@ -439,12 +395,6 @@ public class MaxF extends LinearOpMode {
     // ════════════════════════════════════════════════════════
 
     private void gestionHautManuel() {
-        // Mise à jour tagVisible pour la LED même en mode manuel
-        LLResult resultLed = limelight.getLatestResult();
-        tagVisible = (resultLed != null && resultLed.isValid()
-                && resultLed.getStaleness() <= 300
-                && trouverTag(resultLed) != null);
-
         // ── Turret manuel ──────────────────────────────────────
         float gachetteGauche = gamepad1.left_trigger;
         float gachetteDroit  = gamepad1.right_trigger;
@@ -459,15 +409,13 @@ public class MaxF extends LinearOpMode {
             servoTurret.setPower(0);
         }
 
-        // ── Shooter toggle sur Triangle ────────────────────────
-        // shooterActif est false par défaut → ne tourne PAS au démarrage
+        // ── Shooter toggle ─────────────────────────────────────
         if (tempsDebounceShooter.milliseconds() > 150 && gamepad1.triangle) {
             shooterActif = !shooterActif;
             tempsDebounceShooter.reset();
         }
 
-        // ── Cycle preset avec Cercle ───────────────────────────
-        // Cercle change le preset ET met à jour l'angle servo immédiatement
+        // ── Cycle preset ───────────────────────────────────────
         if (tempsDebounceAngleShooter.milliseconds() > 200 && gamepad1.circle) {
             presetActif = (presetActif + 1) % PRESETS_TIR.length;
             tempsDebounceAngleShooter.reset();
@@ -513,10 +461,9 @@ public class MaxF extends LinearOpMode {
             return;
         }
 
+        // Correction caméra inversée + offset de centrage
         double txBrut    = tag.getTargetXDegrees();
-        // Tag à droite → tx positif → puissance positive → tourne à droite
-        // Si le turret part dans le mauvais sens, change le signe ici : +txBrut → -txBrut
-        double txCorrige = txBrut - TX_OFFSET_DEG;
+        double txCorrige = -txBrut - TX_OFFSET_DEG;  // miroir + décalage calibration
 
         // PD
         double dt      = tempsTurret.seconds();
@@ -639,32 +586,28 @@ public class MaxF extends LinearOpMode {
     //  LED — INDICATEUR D'ÉTAT
     //
     //  Priorité (du plus haut au plus bas) :
-    //   1. Ramassage actif          → orange
-    //   2. Shooter PRÊT             → vert   ✅ (appuie ○)
-    //   3. Shooter actif, chauffe   → rouge  🔴
-    //   4. Tag visible, shooter OFF → jaune  🟡 (tag en vue, prêt à démarrer)
-    //   5. Mode auto, pas de tag    → bleu   🔵
-    //   6. Mode manuel idle         → off    ⚪
+    //   1. Ramassage actif     → orange
+    //   2. Shooter PRÊT        → vert  (appuie sur ○ pour tirer)
+    //   3. Shooter actif/chauffe → rouge
+    //   4. Mode auto           → bleu clignotant (géré simple ici : bleu fixe)
+    //   5. Idle                → off
     // ════════════════════════════════════════════════════════
 
     private static final double LED_OFF    = 0.388;
-    private static final double LED_VERT   = 0.500; // shooter PRÊT
-    private static final double LED_ROUGE  = 0.160; // shooter actif, monte en vitesse
-    private static final double LED_ORANGE = 0.222; // ramassage
-    private static final double LED_BLEU   = 0.611; // auto actif, pas de tag
-    private static final double LED_JAUNE  = 0.118; // tag visible, shooter pas encore actif
+    private static final double LED_VERT   = 0.500;
+    private static final double LED_ROUGE  = 0.160;
+    private static final double LED_ORANGE = 0.222;
+    private static final double LED_BLEU   = 0.611;
 
     private void mettreAJourLED() {
         if (estRamassageActif) {
             light.setPosition(LED_ORANGE);
         } else if (shooterActif && isShooterPret()) {
-            light.setPosition(LED_VERT);
+            light.setPosition(LED_VERT);   // ← PRÊT : appuie sur ○ !
         } else if (shooterActif) {
-            light.setPosition(LED_ROUGE);
-        } else if (tagVisible) {
-            light.setPosition(LED_JAUNE);  // ← tag vu, shooter pas encore actif
+            light.setPosition(LED_ROUGE);  // en train de monter en vitesse
         } else if (modeAutoHaut) {
-            light.setPosition(LED_BLEU);
+            light.setPosition(LED_BLEU);   // auto actif, shooter off
         } else {
             light.setPosition(LED_OFF);
         }
@@ -683,48 +626,26 @@ public class MaxF extends LinearOpMode {
         right   = appliquerZoneMorte(right);
         rotate  = appliquerZoneMorte(rotate);
 
-        // ── Stabilisation Pinpoint à l'arrêt ──────────────────
-        // Mise à jour odométrie (obligatoire à chaque loop)
-        pinpoint.update();
-
-        boolean joysticksRelaches = (forward == 0 && right == 0 && rotate == 0);
-
-        double correctionX = 0; // gauche-droite (strafe)
-        double correctionY = 0; // avant-arrière (forward)
-
-        if (joysticksRelaches) {
-            // Lire vitesse réelle en mm/s dans le repère robot
-            double vx = pinpoint.getVelX(DistanceUnit.MM); // strafe  (mm/s)
-            double vy = pinpoint.getVelY(DistanceUnit.MM); // forward (mm/s)
-
-            double vitesseTotale = Math.sqrt(vx * vx + vy * vy);
-
-            if (vitesseTotale > SEUIL_ARRET_MMS) {
-                // Correction inversée et proportionnelle : freiner le glissement
-                double echelle = KP_STABILISATION / 1000.0; // mm/s → puissance
-                correctionX = clamp(-vx * echelle, -MAX_CORRECTION_STAB, MAX_CORRECTION_STAB);
-                correctionY = clamp(-vy * echelle, -MAX_CORRECTION_STAB, MAX_CORRECTION_STAB);
-                telemetry.addData("Stab Pinpoint", String.format("vx=%.0f vy=%.0f → cx=%.2f cy=%.2f",
-                        vx, vy, correctionX, correctionY));
-            }
-        }
-
-        // ── Calcul puissances cibles (joystick + correction) ──
-        double fl = forward + correctionY + right + correctionX + rotate;
-        double fr = forward + correctionY - right - correctionX - rotate;
-        double br = forward + correctionY + right + correctionX - rotate;
-        double bl = forward + correctionY - right - correctionX + rotate;
+        double frontLeftPowerCible  = forward + right + rotate;
+        double frontRightPowerCible = forward - right - rotate;
+        double backRightPowerCible  = forward + right - rotate;
+        double backLeftPowerCible   = forward - right + rotate;
 
         double maxPower = Math.max(
-                Math.max(Math.abs(fl), Math.abs(fr)),
-                Math.max(Math.abs(bl), Math.abs(br))
+                Math.max(Math.abs(frontLeftPowerCible),  Math.abs(frontRightPowerCible)),
+                Math.max(Math.abs(backLeftPowerCible),   Math.abs(backRightPowerCible))
         );
-        if (maxPower > 1.0) { fl /= maxPower; fr /= maxPower; bl /= maxPower; br /= maxPower; }
+        if (maxPower > 1.0) {
+            frontLeftPowerCible  /= maxPower;
+            frontRightPowerCible /= maxPower;
+            backLeftPowerCible   /= maxPower;
+            backRightPowerCible  /= maxPower;
+        }
 
-        puissanceAvantGaucheActuelle   = appliquerRampe(puissanceAvantGaucheActuelle,   fl);
-        puissanceAvantDroitActuelle    = appliquerRampe(puissanceAvantDroitActuelle,    fr);
-        puissanceArriereGaucheActuelle = appliquerRampe(puissanceArriereGaucheActuelle, bl);
-        puissanceArriereDroitActuelle  = appliquerRampe(puissanceArriereDroitActuelle,  br);
+        puissanceAvantGaucheActuelle   = appliquerRampe(puissanceAvantGaucheActuelle,   frontLeftPowerCible);
+        puissanceAvantDroitActuelle    = appliquerRampe(puissanceAvantDroitActuelle,    frontRightPowerCible);
+        puissanceArriereGaucheActuelle = appliquerRampe(puissanceArriereGaucheActuelle, backLeftPowerCible);
+        puissanceArriereDroitActuelle  = appliquerRampe(puissanceArriereDroitActuelle,  backRightPowerCible);
 
         moteurAvantGauche.setPower(vitesseDeplacement   * puissanceAvantGaucheActuelle);
         moteurAvantDroit.setPower(vitesseDeplacement    * puissanceAvantDroitActuelle);
@@ -787,8 +708,8 @@ public class MaxF extends LinearOpMode {
             servoRamassageGauche.setPower(0.3);
             servoRamassageDroit.setPower(-0.3);
             servoMoteurRamassageBalle.setPower(-0.6);
-            montageGauche.setPower(0.7); // Essayé de ne pas mettre les moteurs REV a 1
-            montageDroit.setPower(0.7);
+            montageGauche.setPower(1.0);
+            montageDroit.setPower(1.0);
             intakeMoteur.setPower(1.0);
         } else {
             servoRamassageGauche.setPower(0.0);
@@ -796,7 +717,6 @@ public class MaxF extends LinearOpMode {
             servoMoteurRamassageBalle.setPower(0.0);
             montageGauche.setPower(0.0);
             montageDroit.setPower(0.0);
-            intakeMoteur.setPower(0.0);
         }
     }
 
@@ -878,18 +798,15 @@ public class MaxF extends LinearOpMode {
         limelight.setPollRateHz(100);
         limelight.start();
 
-        // ── Pinpoint — offsets issus de ta config PP ──────────
-        // forwardPodY = +16.5 cm → en mm : +165
-        // strafePodX  = -17.5 cm → en mm : -175
-        // Les deux encodeurs sont REVERSED.
-        // setOffsets(xOffset, yOffset, unité) — strafePodX=-17.5cm, forwardPodY=+16.5cm
-        pinpoint.setOffsets(-17.5, 16.5, DistanceUnit.CM);
+        /*
+        pinpoint.setOffsets(0, 0);
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(
-                GoBildaPinpointDriver.EncoderDirection.REVERSED,  // forward pod
-                GoBildaPinpointDriver.EncoderDirection.REVERSED   // strafe pod
+                GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                GoBildaPinpointDriver.EncoderDirection.FORWARD
         );
         pinpoint.resetPosAndIMU();
+        */
 
         servoAngleShooter.setPosition(PRESETS_TIR[0][1]);
         light.setPosition(LED_OFF);

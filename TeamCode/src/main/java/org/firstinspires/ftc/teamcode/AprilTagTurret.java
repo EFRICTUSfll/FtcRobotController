@@ -17,7 +17,7 @@ import java.util.List;
  *  BRICKMAKERS - Team 31563
  * =====================================================
  */
-@TeleOp(name = "Brickmakers - AprilTag Turret", group = "Brickmakers")
+@TeleOp(name = "AprilTAG | Turret", group = "Brickmakers")
 public class AprilTagTurret extends LinearOpMode {
 
     // ═══════════════════════════════════════════════════════════════

@@ -311,7 +311,7 @@ public class MaxAngle extends LinearOpMode {
         servoRamassageDroit = hardwareMap.get(CRServo.class, "ramassageD"); // position 5
         servoRamassageGauche = hardwareMap.get(CRServo.class, "ramassageG"); // position 1
         servoTurret = hardwareMap.get(CRServo.class, "turret"); // position 4
-        servoAngleShooter = hardwareMap.get(Servo.class, "angleShooter"); // position 3
+        servoAngleShooter = hardwareMap.get(Servo.class, "angleShooter"); // position 5 Expention HUB
         light = hardwareMap.get(Servo.class, "light"); // Lumiere Gobilda position = 2
         light.setPosition(.388);
 
